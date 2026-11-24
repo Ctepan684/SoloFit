@@ -290,12 +290,64 @@
     <h3 id="sheetTitle">Добавить</h3>
     <button class="icon-btn" id="closeSheet" type="button" aria-label="Закрыть">✕</button>
   </div>
-  <div class="field-row">
-    <input class="field" id="search" type="search" placeholder="Поиск продукта" aria-label="Поиск продукта">
-    <input class="field" id="grams" type="number" inputmode="numeric" min="1" max="2000" value="100" aria-label="Граммы">
+
+  <!-- Поиск по базе -->
+  <div id="sheetSearchView" class="sheet-pane">
+    <div class="search-row">
+      <input class="field" id="search" type="search" placeholder="Поиск продукта (курица, творог, рис...)" aria-label="Поиск продукта">
+      <button class="pill" id="openCustomFood" type="button">+ Свой</button>
+    </div>
+    <div class="food-list" id="foodList"></div>
   </div>
-  <div class="food-list" id="foodList"></div>
+
+  <!-- Ввод граммов выбранного продукта -->
+  <div id="sheetPortionView" class="sheet-pane hidden">
+    <div class="portion-name" id="portionName"></div>
+    <div class="muted" id="portionPer100"></div>
+    <label class="fld">Сколько граммов?
+      <input class="field" id="grams" type="number" inputmode="numeric" min="1" max="2000" value="100">
+    </label>
+    <div class="preset-row">
+      <button class="preset-btn" type="button" data-preset-g="50">50 г</button>
+      <button class="preset-btn" type="button" data-preset-g="100">100 г</button>
+      <button class="preset-btn" type="button" data-preset-g="150">150 г</button>
+      <button class="preset-btn" type="button" data-preset-g="200">200 г</button>
+      <button class="preset-btn" type="button" data-preset-g="250">250 г</button>
+    </div>
+    <div class="portion-preview" id="portionPreview"></div>
+    <div class="btn-row">
+      <button class="btn ghost" id="portionBack" type="button">Назад</button>
+      <button class="btn" id="portionAdd" type="button">Добавить</button>
+    </div>
+  </div>
+
+  <!-- Свой продукт с этикетки -->
+  <div id="sheetCustomView" class="sheet-pane hidden">
+    <form id="formCustomFood" novalidate>
+      <label class="fld">Название продукта
+        <input class="field" id="customName" type="text" placeholder="Например: Творог Простоквашино" required>
+      </label>
+      <div class="metrics-grid">
+        <label class="fld">Ккал / 100 г
+          <input class="field" id="customKcal" type="number" inputmode="decimal" min="0" placeholder="120" required>
+        </label>
+        <label class="fld">Порция (г)
+          <input class="field" id="customGrams" type="number" inputmode="numeric" min="1" value="100" required>
+        </label>
+      </div>
+      <div class="custom-macros">
+        <label class="fld">Б / 100 г<input class="field" id="customP" type="number" inputmode="decimal" step="0.1" min="0" placeholder="0"></label>
+        <label class="fld">Ж / 100 г<input class="field" id="customF" type="number" inputmode="decimal" step="0.1" min="0" placeholder="0"></label>
+        <label class="fld">У / 100 г<input class="field" id="customC" type="number" inputmode="decimal" step="0.1" min="0" placeholder="0"></label>
+      </div>
+      <div class="btn-row">
+        <button class="btn ghost" id="customBack" type="button">Назад</button>
+        <button class="btn" type="submit">Добавить</button>
+      </div>
+    </form>
+  </div>
 </div>
+
 
 <!-- Bottom sheet: Профиль и выход -->
 <div class="glass sheet" id="profileSheet" role="dialog" aria-modal="true" aria-labelledby="profileSheetTitle" hidden>
