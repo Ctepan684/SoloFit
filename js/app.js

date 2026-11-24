@@ -3,6 +3,13 @@ import { initFood } from "./food.js";
 import { initWorkout } from "./workout.js";
 import { initAuth } from "./auth.js";
 
+function showErr(where, err) {
+  const box = document.createElement("div");
+  box.style.cssText = "position:fixed;top:10px;left:10px;right:10px;z-index:9999;background:#b00020;color:#fff;padding:12px;border-radius:12px;font-size:13px;";
+  box.textContent = `Ошибка в ${where}: ${err.message}`;
+  document.body.appendChild(box);
+}
+
 $("today").textContent = state.now.toLocaleDateString("ru-RU", {
   weekday: "long",
   day: "numeric",
@@ -25,6 +32,6 @@ tabs.forEach((t) => {
   });
 });
 
-initFood();
-initWorkout();
-initAuth();
+try { initFood(); } catch (e) { showErr("food.js", e); }
+try { initWorkout(); } catch (e) { showErr("workout.js", e); }
+try { initAuth(); } catch (e) { showErr("auth.js", e); }
