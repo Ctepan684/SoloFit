@@ -91,7 +91,7 @@
     <div class="msg" id="goalMsg" role="alert"></div>
   </section>
 
-  <!-- 3. Шаг 2/3: Рост и вес -->
+   <!-- 3. Шаг 2/3: Рост, вес, возраст и пол -->
   <section id="metricsView" class="glass auth-card hidden" aria-live="polite">
     <div class="step-bar">
       <span class="step-dot done"></span>
@@ -99,9 +99,13 @@
       <span class="step-dot"></span>
     </div>
     <div class="step-caption">Шаг 2 из 3</div>
-    <div class="hello">Ваш рост и вес</div>
-    <p class="sub" style="margin:0">Нужны для точного расчёта суточной нормы калорий и БЖУ.</p>
+    <div class="hello">Ваши параметры</div>
+    <p class="sub" style="margin:0">Нужны для точного расчёта калорий и БЖУ по формуле Миффлина–Сан Жеора.</p>
     <form id="formMetrics" novalidate>
+      <div class="seg" role="tablist" aria-label="Пол">
+        <button type="button" role="tab" id="sexM" aria-selected="true">Мужской</button>
+        <button type="button" role="tab" id="sexF" aria-selected="false">Женский</button>
+      </div>
       <div class="metrics-grid">
         <label class="fld">Рост (см)
           <input class="field" id="inputHeight" type="number" inputmode="numeric" min="100" max="250" placeholder="175" required>
@@ -110,6 +114,30 @@
           <input class="field" id="inputWeight" type="number" inputmode="decimal" step="0.1" min="30" max="250" placeholder="70" required>
         </label>
       </div>
+      <label class="fld">Возраст (лет)
+        <input class="field" id="inputAge" type="number" inputmode="numeric" min="10" max="100" placeholder="17" required>
+      </label>
+
+      <!-- Предупреждение для < 18 лет при нормальном/низком ИМТ -->
+      <div id="ageWarnBox" class="warn-box hidden">
+        <div id="warnStep1">
+          <div class="warn-title">Рекомендация по здоровью</div>
+          <p id="warnBmiText" class="warn-text"></p>
+          <div class="row">
+            <button class="btn" id="warnSwitchBtn" type="button">Перейти на «Сброс жира»</button>
+            <button class="btn ghost" id="warnDeclineBtn" type="button">Нет, оставить «Похудение»</button>
+          </div>
+        </div>
+        <div id="warnStep2" class="hidden">
+          <div class="warn-title">Внимание: риск для гормонов</div>
+          <p class="warn-text">Жёсткий дефицит калорий до 18 лет при нормальном или низком весе может нарушить выработку гормонов, замедлить рост и восстановление. Всё равно продолжить?</p>
+          <div class="row">
+            <button class="btn" id="warnSwitchBtn2" type="button">Выбрать «Сброс жира»</button>
+            <button class="btn danger" id="warnContinueRiskBtn" type="button">Продолжить на свой риск</button>
+          </div>
+        </div>
+      </div>
+
       <div class="msg" id="metricsMsg" role="alert"></div>
       <div class="btn-row">
         <button class="btn ghost" id="metricsBack" type="button">Назад</button>
@@ -117,6 +145,7 @@
       </div>
     </form>
   </section>
+
 
   <!-- 4. Шаг 3/3: Ежедневная активность (5 ступеней) -->
   <section id="activityView" class="glass auth-card hidden" aria-live="polite">
