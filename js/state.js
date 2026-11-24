@@ -12,7 +12,7 @@ export const state = {
   now,
   todayKey: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
   user: null,
-  draft: { goal: "", height: "", weight: "", activity: "" },
+  draft: { goal: "", height: "", weight: "", age: "", sex: "m", activity: "" },
   goal: { kcal: 2000, p: 130, f: 70, c: 230 },
   db: { days: {} }
 };
@@ -46,11 +46,22 @@ export function day() {
   return state.db.days[state.todayKey];
 }
 
+export function calcBMI(heightCm, weightKg) {
+  const h = parseFloat(heightCm) / 100;
+  const w = parseFloat(weightKg);
+  if (!h || !w) return 0;
+  return Math.round((w / (h * h)) * 10) / 10;
+}
+
 export function calcGoal(meta) {
   const w = parseFloat(meta.weight) || 70;
   const h = parseFloat(meta.height) || 175;
+  const age = parseFloat(meta.age) || 20;
+  const sexOffset = meta.sex === "f" ? -161 : 5;
   const act = ACTIVITY_MAP[meta.activity]?.coeff || 1.55;
-  const bmr = 10 * w + 6.25 * h - 100;
+
+  // Формула Миффлина–Сан Жеора с полным учётом возраста и пола
+  const bmr = 10 * w + 6.25 * h - 5 * age + sexOffset;
   const tdee = bmr * act;
 
   let mult = 1.0, pPerKg = 1.8;
