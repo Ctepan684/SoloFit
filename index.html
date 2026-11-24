@@ -8,7 +8,315 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<link rel="stylesheet" href="style.css">
+<style>
+  :root {
+    --night-0: #05070F;
+    --night-1: #0B1126;
+    --night-2: #131C3B;
+    --moon: #F2F6FF;
+    --moon-2: #A9C4FF;
+    --moon-3: #8FAAEA;
+    --text: #E8EEF9;
+    --muted: #8F9CBF;
+    --line: rgba(255, 255, 255, 0.14);
+    --danger: #FF8A9B;
+    --display: "Unbounded", "Arial Black", system-ui, sans-serif;
+    --body: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+
+  body {
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+    background:
+      radial-gradient(900px 600px at 85% -10%, rgba(169, 196, 255, 0.22), transparent 60%),
+      radial-gradient(700px 500px at -10% 30%, rgba(143, 170, 234, 0.12), transparent 60%),
+      linear-gradient(180deg, var(--night-1) 0%, var(--night-2) 55%, var(--night-0) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--moon-2); outline-offset: 3px; border-radius: 12px; }
+  .hidden { display: none !important; }
+
+  /* ---------- Liquid glass ---------- */
+  .glass {
+    position: relative;
+    background: linear-gradient(160deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.05) 45%, rgba(255,255,255,0.03) 100%);
+    -webkit-backdrop-filter: blur(22px) saturate(170%);
+    backdrop-filter: blur(22px) saturate(170%);
+    border: 1px solid var(--line);
+    border-radius: 26px;
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+  }
+  .glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120% 60% at 20% 0%, rgba(255,255,255,0.18), transparent 55%);
+    pointer-events: none;
+  }
+  .glass > * { position: relative; }
+
+  /* ---------- Auth & Onboarding wrapper ---------- */
+  .wrap {
+    max-width: 440px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 36px 18px;
+    padding-top: max(36px, env(safe-area-inset-top));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+  }
+  .auth-brand { font-family: var(--display); font-weight: 700; font-size: 26px; color: var(--moon); text-align: center; }
+  .sub { color: var(--muted); text-align: center; margin: -10px 0 0; font-size: 14px; }
+  .auth-card { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; border-radius: 99px; background: rgba(5,7,15,0.35); border: 1px solid var(--line); }
+  .seg button { padding: 10px; border: 0; border-radius: 99px; background: transparent; color: var(--muted); font-weight: 700; font-size: 14px; }
+  .seg button[aria-selected="true"] {
+    background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.08));
+    color: var(--moon); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 6px 18px rgba(0,0,0,0.35);
+  }
+
+  form { display: flex; flex-direction: column; gap: 12px; }
+  label.fld { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); font-weight: 600; }
+  input.field {
+    width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line);
+    background: rgba(5,7,15,0.45); color: var(--text); outline: none; font-size: 16px;
+  }
+  input.field:focus { border-color: var(--moon-2); }
+
+  .btn {
+    margin-top: 4px; width: 100%; padding: 13px 14px; border-radius: 16px; border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(169,196,255,0.28), rgba(169,196,255,0.1));
+    color: var(--moon); font-weight: 700; font-size: 15px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn:hover:not(:disabled) { background: linear-gradient(180deg, rgba(169,196,255,0.36), rgba(169,196,255,0.14)); }
+  .btn:disabled { opacity: 0.55; cursor: default; }
+  .btn.ghost { background: rgba(255,255,255,0.05); color: var(--muted); box-shadow: none; }
+  .btn.ghost:hover:not(:disabled) { background: rgba(255,255,255,0.09); color: var(--text); }
+  .btn.danger { background: rgba(255,138,155,0.12); border-color: rgba(255,138,155,0.3); color: var(--danger); box-shadow: none; }
+
+  .btn-row { display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; margin-top: 4px; }
+
+  .msg { font-size: 14px; border-radius: 14px; padding: 11px 13px; display: none; }
+  .msg.show { display: block; }
+  .msg.err { color: var(--danger); background: rgba(255,138,155,0.08); border: 1px solid rgba(255,138,155,0.25); }
+  .msg.ok { color: var(--moon-2); background: rgba(169,196,255,0.08); border: 1px solid rgba(169,196,255,0.25); }
+
+  .hello { font-family: var(--display); font-size: 19px; color: var(--moon); text-align: center; line-height: 1.3; }
+  .row { display: flex; flex-direction: column; gap: 10px; }
+
+  /* ---------- Onboarding steps & cards ---------- */
+  .step-bar { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 2px; }
+  .step-dot { height: 5px; width: 32px; border-radius: 99px; background: rgba(255,255,255,0.14); transition: background 0.25s, width 0.25s; }
+  .step-dot.active { background: var(--moon-2); width: 44px; }
+  .step-dot.done { background: rgba(169,196,255,0.55); }
+  .step-caption { text-align: center; font-size: 12px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; }
+
+  .choice-btn {
+    width: 100%; text-align: left; padding: 13px 15px; border-radius: 16px;
+    border: 1px solid var(--line); background: rgba(255,255,255,0.05);
+    display: flex; flex-direction: column; gap: 3px; transition: background 0.2s, border-color 0.2s;
+  }
+  .choice-btn:hover:not(:disabled) { background: rgba(169,196,255,0.14); border-color: rgba(169,196,255,0.45); }
+  .choice-btn.selected {
+    background: linear-gradient(160deg, rgba(169,196,255,0.26), rgba(169,196,255,0.09));
+    border-color: var(--moon-2); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .choice-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .choice-title { font-weight: 700; font-size: 15px; color: var(--moon); }
+  .choice-badge {
+    font-size: 11px; font-weight: 700; color: var(--moon-2);
+    background: rgba(169,196,255,0.14); border: 1px solid rgba(169,196,255,0.25);
+    padding: 2px 8px; border-radius: 99px; white-space: nowrap;
+  }
+  .choice-desc { font-size: 13px; color: var(--muted); line-height: 1.4; }
+  .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* ---------- Age/BMI warning ---------- */
+  .warn-box {
+    padding: 14px; border-radius: 16px;
+    background: rgba(255, 138, 155, 0.1); border: 1px solid rgba(255, 138, 155, 0.35);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .warn-title { font-weight: 700; color: var(--danger); font-size: 14px; }
+  .warn-text { margin: 4px 0 10px; font-size: 13px; color: var(--text); line-height: 1.45; }
+
+  /* ---------- Main App Layout ---------- */
+  .app { max-width: 480px; margin: 0 auto; padding: 18px 16px 130px; padding-top: max(18px, env(safe-area-inset-top)); }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 4px 18px; }
+  .topbar-left { display: flex; flex-direction: column; gap: 2px; }
+  .brand { font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: 0.02em; color: var(--moon); line-height: 1.1; }
+  .today { color: var(--muted); font-size: 13px; text-transform: capitalize; }
+
+  .profile-chip {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 99px;
+    border: 1px solid var(--line); background: rgba(255,255,255,0.07);
+    color: var(--moon); font-size: 13px; font-weight: 700; max-width: 180px;
+  }
+  .profile-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .profile-chip:hover { background: rgba(255,255,255,0.13); }
+
+  .view { display: none; flex-direction: column; gap: 14px; }
+  .view.active { display: flex; }
+
+  .card { padding: 18px; }
+  .card h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; }
+  .muted { color: var(--muted); font-size: 13px; }
+
+  /* ---------- Hero: calorie ring ---------- */
+  .hero { padding: 22px 20px; display: grid; grid-template-columns: 150px 1fr; gap: 18px; align-items: center; }
+  .ring { position: relative; width: 150px; height: 150px; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring .track { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 9; }
+  .ring .bar {
+    fill: none; stroke: url(#moonGrad); stroke-width: 9; stroke-linecap: round;
+    stroke-dasharray: 339.29; stroke-dashoffset: 339.29;
+    transition: stroke-dashoffset 0.8s cubic-bezier(.2,.7,.2,1);
+    filter: drop-shadow(0 0 8px rgba(169,196,255,0.45));
+  }
+  .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .ring-center b { font-family: var(--display); font-size: 26px; font-weight: 700; color: var(--moon); line-height: 1.1; }
+  .ring-center span { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .macros { display: flex; flex-direction: column; gap: 12px; }
+  .macro-row { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center; font-size: 13px; }
+  .macro-row .k { font-weight: 700; color: var(--moon-2); }
+  .macro-row .v { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .bar-track { height: 8px; border-radius: 99px; background: rgba(255,255,255,0.08); overflow: hidden; }
+  .bar-fill { height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, var(--moon-3), var(--moon)); transition: width 0.6s ease; }
+
+  .goal-strip {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between;
+    padding: 12px 16px; font-size: 13px; color: var(--muted);
+  }
+  .goal-strip b { color: var(--moon); }
+
+  /* ---------- Meals ---------- */
+  .meal-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .meal-head .sum { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
+  .items { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .items li {
+    display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center;
+    padding: 9px 12px; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.06);
+    font-size: 14px;
+  }
+  .items .meta { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .items .kc { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .icon-btn {
+    width: 28px; height: 28px; border-radius: 99px; border: 1px solid var(--line);
+    background: rgba(255,255,255,0.06); color: var(--muted); display: grid; place-items: center; padding: 0;
+  }
+  .icon-btn:hover { color: var(--danger); }
+  .add-btn {
+    margin-top: 12px; width: 100%; padding: 11px; border-radius: 16px; border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(169,196,255,0.22), rgba(169,196,255,0.08));
+    color: var(--moon); font-weight: 700; font-size: 14px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .add-btn:hover { background: linear-gradient(180deg, rgba(169,196,255,0.3), rgba(169,196,255,0.12)); }
+
+  /* ---------- Workout ---------- */
+  .ex { padding: 14px; border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); margin-top: 10px; }
+  .ex-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+  .ex-name { font-weight: 700; }
+  .ex-scheme { color: var(--muted); font-size: 13px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .sets { display: flex; gap: 8px; margin-top: 10px; }
+  .set {
+    flex: 1; height: 42px; border-radius: 14px; border: 1px solid var(--line);
+    background: rgba(255,255,255,0.05); color: var(--muted); font-weight: 700; font-size: 13px;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .set[aria-pressed="true"] {
+    background: linear-gradient(180deg, var(--moon), var(--moon-3)); color: var(--night-1); border-color: transparent;
+    box-shadow: 0 0 16px rgba(169,196,255,0.35);
+  }
+  .progress { font-size: 13px; color: var(--muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .rest { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding: 12px 14px; border-radius: 18px; background: rgba(255,255,255,0.05); border: 1px solid var(--line); }
+  .rest-time { font-family: var(--display); font-size: 20px; color: var(--moon); font-variant-numeric: tabular-nums; }
+  .pill {
+    padding: 10px 16px; border-radius: 99px; border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(169,196,255,0.24), rgba(169,196,255,0.08)); color: var(--moon); font-weight: 700; font-size: 13px;
+  }
+
+  /* ---------- Tab bar ---------- */
+  .tabbar {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: max(14px, env(safe-area-inset-bottom)); width: min(440px, calc(100% - 28px));
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; border-radius: 99px; z-index: 5;
+  }
+  .tabbar button {
+    padding: 12px; border: 0; border-radius: 99px; background: transparent; color: var(--muted); font-weight: 700; font-size: 14px;
+  }
+  .tabbar button[aria-selected="true"] {
+    background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.08));
+    color: var(--moon); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 6px 18px rgba(0,0,0,0.35);
+  }
+
+  /* ---------- Sheets (add food / profile) ---------- */
+  .scrim { position: fixed; inset: 0; background: rgba(2,4,10,0.6); z-index: 10; }
+  .sheet {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; width: min(480px, 100%);
+    max-height: 84vh; z-index: 11; border-radius: 28px 28px 0 0; padding: 18px 16px max(20px, env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .sheet[hidden], .scrim[hidden] { display: none; }
+  .sheet-head { display: flex; justify-content: space-between; align-items: center; }
+  .sheet-head h3 { margin: 0; font-size: 16px; }
+  .sheet-pane { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  .search-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+  .food-list { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 2px; }
+  .food-btn {
+    display: flex; justify-content: space-between; gap: 10px; align-items: center; text-align: left; width: 100%;
+    padding: 11px 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.04);
+  }
+  .food-btn:hover { background: rgba(255,255,255,0.09); }
+  .food-btn .meta { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .portion-name { font-weight: 700; font-size: 16px; color: var(--moon); }
+  .preset-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .preset-btn {
+    padding: 8px 4px; border-radius: 12px; border: 1px solid var(--line);
+    background: rgba(255,255,255,0.06); color: var(--moon); font-size: 12px; font-weight: 700;
+  }
+  .preset-btn:hover { background: rgba(169,196,255,0.2); }
+  .portion-preview {
+    padding: 10px 12px; border-radius: 14px; text-align: center;
+    background: rgba(169,196,255,0.1); border: 1px solid rgba(169,196,255,0.25);
+    font-size: 13px; font-weight: 700; color: var(--moon); font-variant-numeric: tabular-nums;
+  }
+  .custom-macros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+  .profile-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-box { padding: 10px 12px; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07); }
+  .stat-box .k { font-size: 12px; color: var(--muted); }
+  .stat-box .v { font-weight: 700; font-size: 14px; color: var(--moon); margin-top: 2px; }
+  .empty { color: var(--muted); font-size: 13px; padding: 4px 2px 0; }
+
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+  @media (max-width: 360px) {
+    .hero { grid-template-columns: 1fr; justify-items: center; }
+    .macros { width: 100%; }
+  }
+</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -91,7 +399,7 @@
     <div class="msg" id="goalMsg" role="alert"></div>
   </section>
 
-   <!-- 3. Шаг 2/3: Рост, вес, возраст и пол -->
+  <!-- 3. Шаг 2/3: Рост, вес, возраст и пол -->
   <section id="metricsView" class="glass auth-card hidden" aria-live="polite">
     <div class="step-bar">
       <span class="step-dot done"></span>
@@ -118,7 +426,6 @@
         <input class="field" id="inputAge" type="number" inputmode="numeric" min="10" max="100" placeholder="17" required>
       </label>
 
-      <!-- Предупреждение для < 18 лет при нормальном/низком ИМТ -->
       <div id="ageWarnBox" class="warn-box hidden">
         <div id="warnStep1">
           <div class="warn-title">Рекомендация по здоровью</div>
@@ -146,8 +453,7 @@
     </form>
   </section>
 
-
-  <!-- 4. Шаг 3/3: Ежедневная активность (5 ступеней) -->
+  <!-- 4. Шаг 3/3: Ежедневная активность -->
   <section id="activityView" class="glass auth-card hidden" aria-live="polite">
     <div class="step-bar">
       <span class="step-dot done"></span>
@@ -221,7 +527,6 @@
     </button>
   </header>
 
-  <!-- ===== Питание ===== -->
   <section class="view active" id="view-food" role="tabpanel" aria-label="Питание">
     <div class="glass hero">
       <div class="ring" aria-hidden="false">
@@ -261,7 +566,6 @@
     <div id="meals"></div>
   </section>
 
-  <!-- ===== Тренировка ===== -->
   <section class="view" id="view-train" role="tabpanel" aria-label="Тренировка">
     <div class="glass card">
       <h2>Full body</h2>
@@ -276,6 +580,8 @@
       </div>
     </div>
   </section>
+
+  <div id="extraViews"></div>
 </div>
 
 <nav class="glass tabbar hidden" id="tabbar" role="tablist" aria-label="Разделы">
@@ -291,7 +597,6 @@
     <button class="icon-btn" id="closeSheet" type="button" aria-label="Закрыть">✕</button>
   </div>
 
-  <!-- Поиск по базе -->
   <div id="sheetSearchView" class="sheet-pane">
     <div class="search-row">
       <input class="field" id="search" type="search" placeholder="Поиск продукта (курица, творог, рис...)" aria-label="Поиск продукта">
@@ -300,7 +605,6 @@
     <div class="food-list" id="foodList"></div>
   </div>
 
-  <!-- Ввод граммов выбранного продукта -->
   <div id="sheetPortionView" class="sheet-pane hidden">
     <div class="portion-name" id="portionName"></div>
     <div class="muted" id="portionPer100"></div>
@@ -321,7 +625,6 @@
     </div>
   </div>
 
-  <!-- Свой продукт с этикетки -->
   <div id="sheetCustomView" class="sheet-pane hidden">
     <form id="formCustomFood" novalidate>
       <label class="fld">Название продукта
@@ -348,7 +651,6 @@
   </div>
 </div>
 
-
 <!-- Bottom sheet: Профиль и выход -->
 <div class="glass sheet" id="profileSheet" role="dialog" aria-modal="true" aria-labelledby="profileSheetTitle" hidden>
   <div class="sheet-head">
@@ -358,7 +660,7 @@
   <div class="profile-stats">
     <div class="stat-box"><div class="k">Цель</div><div class="v" id="profGoal">—</div></div>
     <div class="stat-box"><div class="k">Активность</div><div class="v" id="profAct">—</div></div>
-    <div class="stat-box"><div class="k">Рост / Вес</div><div class="v" id="profBody">—</div></div>
+    <div class="stat-box"><div class="k">Параметры</div><div class="v" id="profBody">—</div></div>
     <div class="stat-box"><div class="k">Дневная норма</div><div class="v" id="profKcal">—</div></div>
   </div>
   <div class="row">
@@ -366,8 +668,769 @@
     <button class="btn danger" id="logoutBtn" type="button">Выйти из аккаунта</button>
   </div>
 </div>
-<script>window.onerror = (m, s, l) => alert(m + "\n" + s + ":" + l);</script>
 
-<script type="module" src="js/app.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var SUPABASE_URL = "https://jzfnjsbenwjrrrxzwnfe.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_ipXQ1eiB4fm024bDAdRr-Q_k6s-XlZY";
+  var RING_LEN = 339.29;
+  var $ = function (id) { return document.getElementById(id); };
+
+  var GOAL_LABELS = {
+    weight_loss: "Похудение",
+    fat_loss: "Сброс жира",
+    muscle_gain: "Набор массы",
+    strength: "Набор силовых"
+  };
+
+  var ACTIVITY_MAP = {
+    sedentary: { label: "Сидячий",      coeff: 1.2 },
+    light:     { label: "Умеренный",    coeff: 1.375 },
+    moderate:  { label: "Средний",      coeff: 1.55 },
+    active:    { label: "Активный",     coeff: 1.725 },
+    extreme:   { label: "Максимальный", coeff: 1.9 }
+  };
+
+  var FOODS = [
+    // Мясо, птица, рыба
+    { n: "Куриная грудка сырая",       k: 113, p: 23.6, f: 1.9,  c: 0 },
+    { n: "Куриная грудка варёная",     k: 165, p: 31,   f: 3.6,  c: 0 },
+    { n: "Куриная грудка запечённая",  k: 150, p: 29,   f: 3.5,  c: 0 },
+    { n: "Куриное бедро без кожи",     k: 145, p: 19,   f: 7.5,  c: 0 },
+    { n: "Филе индейки",               k: 115, p: 21.6, f: 2.5,  c: 0 },
+    { n: "Фарш куриный",               k: 143, p: 17.4, f: 8.1,  c: 0 },
+    { n: "Фарш говяжий",               k: 215, p: 17.2, f: 16,   c: 0 },
+    { n: "Фарш домашний (свин/гов)",   k: 263, p: 16,   f: 22,   c: 0 },
+    { n: "Говядина постная",           k: 158, p: 22,   f: 7.5,  c: 0 },
+    { n: "Свинина нежирная",           k: 195, p: 20,   f: 12.5, c: 0 },
+    { n: "Ветчина из индейки",         k: 120, p: 14,   f: 6,    c: 2 },
+    { n: "Сосиски молочные",           k: 260, p: 11,   f: 23,   c: 2 },
+    { n: "Лосось / сёмга запечённая",  k: 208, p: 20,   f: 13,   c: 0 },
+    { n: "Тунец в собственном соку",   k: 96,  p: 21,   f: 1,    c: 0 },
+    { n: "Минтай филе",                k: 72,  p: 15.9, f: 0.9,  c: 0 },
+    { n: "Скумбрия запечённая",        k: 210, p: 19,   f: 15,   c: 0 },
+    { n: "Креветки варёные",           k: 95,  p: 20.5, f: 1.1,  c: 0 },
+
+    // Яйца и молочка
+    { n: "Яйцо куриное (1 шт ≈ 55 г)", k: 157, p: 12.7, f: 11.5, c: 0.7 },
+    { n: "Яичный белок",               k: 48,  p: 11,   f: 0.2,  c: 0.7 },
+    { n: "Творог 0% обезжиренный",     k: 71,  p: 16.5, f: 0.1,  c: 1.3 },
+    { n: "Творог 2%",                  k: 101, p: 18,   f: 2,    c: 3 },
+    { n: "Творог 5%",                  k: 121, p: 17,   f: 5,    c: 3 },
+    { n: "Творог 9%",                  k: 159, p: 16.7, f: 9,    c: 2 },
+    { n: "Йогурт греческий 2%",        k: 66,  p: 8,    f: 2,    c: 4 },
+    { n: "Йогурт натуральный",         k: 60,  p: 4.5,  f: 2.5,  c: 5 },
+    { n: "Молоко 2.5%",                k: 52,  p: 2.8,  f: 2.5,  c: 4.7 },
+    { n: "Кефир 2.5%",                 k: 50,  p: 2.9,  f: 2.5,  c: 4 },
+    { n: "Ряженка 4%",                 k: 67,  p: 2.8,  f: 4,    c: 4.2 },
+    { n: "Сметана 15%",                k: 162, p: 2.6,  f: 15,   c: 3.6 },
+    { n: "Сыр Российский / Тильзитер", k: 355, p: 24,   f: 28,   c: 0 },
+    { n: "Сыр творожный сливочный",    k: 260, p: 6.5,  f: 24,   c: 4 },
+    { n: "Моцарелла",                  k: 250, p: 18,   f: 19,   c: 1.5 },
+    { n: "Масло сливочное 82.5%",      k: 748, p: 0.5,  f: 82.5, c: 0.8 },
+
+    // Крупы, гарниры, хлеб
+    { n: "Овсянка сухая (геркулес)",   k: 352, p: 12.3, f: 6.2,  c: 61.8 },
+    { n: "Овсяная каша на воде",       k: 88,  p: 3,    f: 1.7,  c: 15 },
+    { n: "Гречка сухая",               k: 313, p: 12.6, f: 3.3,  c: 62 },
+    { n: "Гречка отварная",            k: 110, p: 4.2,  f: 1.1,  c: 21.3 },
+    { n: "Рис белый сухой",            k: 344, p: 6.7,  f: 0.7,  c: 78.9 },
+    { n: "Рис отварной",               k: 130, p: 2.7,  f: 0.3,  c: 28 },
+    { n: "Макароны сухие (тв. сорта)", k: 350, p: 12,   f: 1.5,  c: 71 },
+    { n: "Макароны отварные",          k: 135, p: 4.5,  f: 0.6,  c: 27 },
+    { n: "Картофель отварной",         k: 82,  p: 2,    f: 0.4,  c: 17 },
+    { n: "Картофель запечённый",       k: 95,  p: 2.2,  f: 0.5,  c: 20 },
+    { n: "Пюре картофельное",          k: 105, p: 2.1,  f: 3.8,  c: 15.5 },
+    { n: "Хлеб ржаной / Дарницкий",    k: 210, p: 6.6,  f: 1.2,  c: 42 },
+    { n: "Батон белый нарезной",       k: 265, p: 7.5,  f: 2.9,  c: 51 },
+    { n: "Лаваш тонкий армянский",     k: 245, p: 8,    f: 1,    c: 50 },
+    { n: "Хлебцы цельнозерновые",      k: 310, p: 10,   f: 2.5,  c: 60 },
+    { n: "Пельмени (говядина/свинина)",k: 255, p: 11,   f: 12,   c: 25 },
+
+    // Овощи и фрукты
+    { n: "Огурец свежий",              k: 15,  p: 0.8,  f: 0.1,  c: 2.8 },
+    { n: "Помидор свежий",             k: 20,  p: 1.1,  f: 0.2,  c: 3.8 },
+    { n: "Капуста белокочанная",       k: 27,  p: 1.8,  f: 0.1,  c: 4.7 },
+    { n: "Морковь",                    k: 35,  p: 1.3,  f: 0.1,  c: 6.9 },
+    { n: "Брокколи",                   k: 34,  p: 2.8,  f: 0.4,  c: 6.6 },
+    { n: "Авокадо",                    k: 160, p: 2,    f: 14.7, c: 8.5 },
+    { n: "Банан",                      k: 89,  p: 1.1,  f: 0.3,  c: 22.8 },
+    { n: "Яблоко",                     k: 52,  p: 0.3,  f: 0.2,  c: 13.8 },
+    { n: "Апельсин",                   k: 43,  p: 0.9,  f: 0.2,  c: 8.1 },
+    { n: "Груша",                      k: 57,  p: 0.4,  f: 0.1,  c: 15 },
+
+    // Соусы, масла, орехи, снеки
+    { n: "Масло подсолнечное / олив.", k: 899, p: 0,    f: 99.9, c: 0 },
+    { n: "Кетчуп томатный",            k: 100, p: 1.5,  f: 0.2,  c: 23 },
+    { n: "Соус барбекю (BBQ)",         k: 145, p: 1,    f: 0.5,  c: 34 },
+    { n: "Томатная паста",             k: 80,  p: 4.5,  f: 0.5,  c: 15 },
+    { n: "Майонез классический 67%",   k: 625, p: 2.8,  f: 67,   c: 2.6 },
+    { n: "Арахис жареный",             k: 585, p: 26,   f: 49,   c: 13 },
+    { n: "Миндаль",                    k: 579, p: 21,   f: 50,   c: 22 },
+    { n: "Арахисовая паста",           k: 590, p: 25,   f: 50,   c: 16 },
+    { n: "Сырок творожный глазир.",    k: 380, p: 8,    f: 24,   c: 33 },
+    { n: "Шоколад молочный",           k: 540, p: 7,    f: 31,   c: 57 },
+    { n: "Шоколад тёмный 70%",         k: 545, p: 8,    f: 36,   c: 45 },
+    { n: "Протеин сывороточный (порош)",k: 390, p: 75,  f: 6,    c: 9 },
+    { n: "Протеиновый батончик",       k: 330, p: 30,   f: 12,   c: 25 }
+  ];
+
+  var MEALS = [
+    { id: "breakfast", name: "Завтрак" },
+    { id: "lunch",     name: "Обед" },
+    { id: "dinner",    name: "Ужин" },
+    { id: "snack",     name: "Перекус" }
+  ];
+
+  var PLAN = [
+    { name: "Приседания с весом тела", sets: 3, reps: "12" },
+    { name: "Отжимания от пола или с колен", sets: 3, reps: "8–12" },
+    { name: "Тяга гантели в наклоне", sets: 3, reps: "10 на руку" },
+    { name: "Выпады назад", sets: 3, reps: "10 на ногу" },
+    { name: "Ягодичный мост", sets: 3, reps: "15" },
+    { name: "Планка", sets: 3, reps: "30 сек" }
+  ];
+
+  var pad = function (n) { return n < 10 ? "0" + n : "" + n; };
+  var round1 = function (x) { return Math.round(x * 10) / 10; };
+  var esc = function (s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  };
+
+  var now = new Date();
+  var todayKey = now.getFullYear() + "-" + pad(now.getMonth() + 1) + "-" + pad(now.getDate());
+  var currentUser = null;
+  var draft = { goal: "", height: "", weight: "", age: "", sex: "m", activity: "" };
+  var GOAL = { kcal: 2000, p: 130, f: 70, c: 230 };
+  var db = { days: {} };
+
+  function storageKey() {
+    return "solofit-v2-" + (currentUser && currentUser.id ? currentUser.id : "guest");
+  }
+  function loadDb() {
+    try { db = JSON.parse(localStorage.getItem(storageKey())) || { days: {} }; }
+    catch (e) { db = { days: {} }; }
+  }
+  function saveDb() {
+    try { localStorage.setItem(storageKey(), JSON.stringify(db)); } catch (e) {}
+  }
+  function day() {
+    if (!db.days) db.days = {};
+    if (!db.days[todayKey]) {
+      db.days[todayKey] = { meals: { breakfast: [], lunch: [], dinner: [], snack: [] }, sets: {} };
+    }
+    return db.days[todayKey];
+  }
+
+  function calcBMI(heightCm, weightKg) {
+    var h = parseFloat(heightCm) / 100;
+    var w = parseFloat(weightKg);
+    if (!h || !w) return 0;
+    return Math.round((w / (h * h)) * 10) / 10;
+  }
+
+  function calcGoal(meta) {
+    var w = parseFloat(meta.weight) || 70;
+    var h = parseFloat(meta.height) || 175;
+    var age = parseFloat(meta.age) || 20;
+    var sexOffset = meta.sex === "f" ? -161 : 5;
+    var act = ACTIVITY_MAP[meta.activity] ? ACTIVITY_MAP[meta.activity].coeff : 1.55;
+
+    var bmr = 10 * w + 6.25 * h - 5 * age + sexOffset;
+    var tdee = bmr * act;
+
+    var mult = 1.0, pPerKg = 1.8;
+    if (meta.goal === "weight_loss") { mult = 0.82; pPerKg = 1.8; }
+    else if (meta.goal === "fat_loss") { mult = 0.88; pPerKg = 2.1; }
+    else if (meta.goal === "muscle_gain") { mult = 1.12; pPerKg = 2.0; }
+    else if (meta.goal === "strength") { mult = 1.08; pPerKg = 2.0; }
+
+    var kcal = Math.max(1200, Math.round((tdee * mult) / 10) * 10);
+    var p = Math.round(w * pPerKg);
+    var f = Math.round(w * 0.9);
+    var c = Math.max(50, Math.round((kcal - p * 4 - f * 9) / 4));
+    return { kcal: kcal, p: p, f: f, c: c };
+  }
+
+  // ==================== API ДЛЯ БУДУЩИХ ФИШЕК ====================
+  var hooks = { onRender: [], onAppReady: [] };
+  window.SoloFit = {
+    foods: FOODS,
+    plan: PLAN,
+    meals: MEALS,
+    getUser: function () { return currentUser; },
+    getGoal: function () { return GOAL; },
+    getDay: day,
+    save: saveDb,
+    renderFood: renderFood,
+    renderWorkout: renderWorkout,
+    addFoods: function (arr) {
+      if (Array.isArray(arr)) arr.forEach(function (x) { FOODS.push(x); });
+    },
+    addWorkout: function (ex) {
+      if (ex) { PLAN.push(ex); renderWorkout(); }
+    },
+    onRender: function (fn) { if (typeof fn === "function") hooks.onRender.push(fn); },
+    onAppReady: function (fn) { if (typeof fn === "function") hooks.onAppReady.push(fn); },
+    addTab: function (id, label, htmlContent) {
+      var bar = $("tabbar");
+      var cols = bar.children.length + 1;
+      bar.style.gridTemplateColumns = "repeat(" + cols + ", 1fr)";
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.setAttribute("role", "tab");
+      btn.setAttribute("data-tab", id);
+      btn.setAttribute("aria-selected", "false");
+      btn.textContent = label;
+      bar.appendChild(btn);
+
+      var sec = document.createElement("section");
+      sec.className = "view";
+      sec.id = "view-" + id;
+      sec.setAttribute("role", "tabpanel");
+      sec.innerHTML = htmlContent;
+      $("extraViews").appendChild(sec);
+      bindTabs();
+      return sec;
+    }
+  };
+
+  // ==================== SUPABASE ====================
+  var sb = null;
+  if (window.supabase && window.supabase.createClient) {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+
+  function setMsg(id, text, kind) {
+    var el = $(id);
+    if (!el) return;
+    el.textContent = text;
+    el.className = "msg show " + kind;
+  }
+  function clearMsg(id) {
+    var el = $(id);
+    if (!el) return;
+    el.textContent = "";
+    el.className = "msg";
+  }
+  function setBusy(btnId, busy, idleText) {
+    var b = $(btnId);
+    b.disabled = busy;
+    b.textContent = busy ? "Подождите..." : idleText;
+  }
+  function validEmail(s) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s); }
+  function humanError(err) {
+    var m = (err && err.message || "").toLowerCase();
+    if (m.indexOf("invalid login") !== -1) return "Неверная почта или пароль.";
+    if (m.indexOf("email not confirmed") !== -1) return "Подтвердите почту: мы отправили письмо со ссылкой.";
+    if (m.indexOf("already registered") !== -1 || m.indexOf("already been registered") !== -1) return "Этот email уже зарегистрирован. Попробуйте войти.";
+    if (m.indexOf("password") !== -1 && m.indexOf("6") !== -1) return "Пароль должен быть не короче 6 символов.";
+    if (m.indexOf("rate limit") !== -1 || m.indexOf("too many") !== -1) return "Слишком много попыток. Подождите немного.";
+    if (m.indexOf("network") !== -1 || m.indexOf("failed to fetch") !== -1) return "Нет связи с сервером. Проверьте интернет.";
+    return "Что-то пошло не так. Попробуйте ещё раз.";
+  }
+
+  // ==================== ONBOARDING ROUTER ====================
+  function hideAgeWarn() {
+    $("ageWarnBox").classList.add("hidden");
+    $("warnStep1").classList.remove("hidden");
+    $("warnStep2").classList.add("hidden");
+  }
+
+  function showOnboardingScreen(viewId) {
+    $("appWrap").classList.add("hidden");
+    $("tabbar").classList.add("hidden");
+    $("onboardingWrap").classList.remove("hidden");
+    ["authView", "goalView", "metricsView", "activityView"].forEach(function (id) {
+      $(id).classList.toggle("hidden", id !== viewId);
+    });
+    hideAgeWarn();
+    window.scrollTo({ top: 0 });
+  }
+
+  function syncOnboardingUI() {
+    document.querySelectorAll(".goal-opt").forEach(function (b) {
+      b.classList.toggle("selected", b.getAttribute("data-goal") === draft.goal);
+    });
+    $("inputHeight").value = draft.height || "";
+    $("inputWeight").value = draft.weight || "";
+    $("inputAge").value = draft.age || "";
+    var isF = draft.sex === "f";
+    $("sexM").setAttribute("aria-selected", String(!isF));
+    $("sexF").setAttribute("aria-selected", String(isF));
+    document.querySelectorAll(".act-opt").forEach(function (b) {
+      b.classList.toggle("selected", b.getAttribute("data-activity") === draft.activity);
+    });
+  }
+
+  function showApp(user) {
+    currentUser = user;
+    var meta = user.user_metadata || {};
+    GOAL = calcGoal(meta);
+    loadDb();
+
+    $("onboardingWrap").classList.add("hidden");
+    $("appWrap").classList.remove("hidden");
+    $("tabbar").classList.remove("hidden");
+
+    var name = meta.name || (user.email ? user.email.split("@")[0] : "Профиль");
+    var bmi = calcBMI(meta.height, meta.weight);
+    $("profileName").textContent = name;
+    $("stripGoal").textContent = GOAL_LABELS[meta.goal] || "—";
+    $("stripKcal").textContent = GOAL.kcal + " ккал";
+    $("profGoal").textContent = GOAL_LABELS[meta.goal] || "—";
+    $("profAct").textContent = ACTIVITY_MAP[meta.activity] ? ACTIVITY_MAP[meta.activity].label : "—";
+    $("profBody").textContent = (meta.height || "—") + " см · " + (meta.weight || "—") + " кг · " + (meta.age || "—") + " лет";
+    $("profKcal").textContent = GOAL.kcal + " ккал (ИМТ " + (bmi || "—") + ")";
+
+    renderFood();
+    renderWorkout();
+    hooks.onAppReady.forEach(function (fn) { try { fn(user, GOAL); } catch (e) {} });
+  }
+
+  function routeUser(user) {
+    currentUser = user || null;
+    if (!user) return showOnboardingScreen("authView");
+
+    var meta = user.user_metadata || {};
+    draft = {
+      goal: meta.goal || "",
+      height: meta.height || "",
+      weight: meta.weight || "",
+      age: meta.age || "",
+      sex: meta.sex || "m",
+      activity: meta.activity || ""
+    };
+
+    syncOnboardingUI();
+    if (!draft.goal || !GOAL_LABELS[draft.goal]) return showOnboardingScreen("goalView");
+    if (!draft.height || !draft.weight || !draft.age) return showOnboardingScreen("metricsView");
+    if (!draft.activity || !ACTIVITY_MAP[draft.activity]) return showOnboardingScreen("activityView");
+    showApp(user);
+  }
+
+  // ==================== AUTH EVENTS ====================
+  function selectTab(which) {
+    var login = which === "login";
+    $("tabLogin").setAttribute("aria-selected", String(login));
+    $("tabSignup").setAttribute("aria-selected", String(!login));
+    $("formLogin").classList.toggle("hidden", !login);
+    $("formSignup").classList.toggle("hidden", login);
+    clearMsg("loginMsg"); clearMsg("signupMsg");
+  }
+  $("tabLogin").addEventListener("click", function () { selectTab("login"); });
+  $("tabSignup").addEventListener("click", function () { selectTab("signup"); });
+
+  $("sexM").addEventListener("click", function () { draft.sex = "m"; syncOnboardingUI(); });
+  $("sexF").addEventListener("click", function () { draft.sex = "f"; syncOnboardingUI(); });
+
+  $("formLogin").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    clearMsg("loginMsg");
+    if (!sb) return setMsg("loginMsg", "Библиотека Supabase не загрузилась. Проверьте интернет.", "err");
+    var email = $("loginEmail").value.trim();
+    var password = $("loginPassword").value;
+    if (!validEmail(email)) return setMsg("loginMsg", "Введите корректный email.", "err");
+    if (!password) return setMsg("loginMsg", "Введите пароль.", "err");
+
+    setBusy("loginBtn", true, "Войти");
+    var res = await sb.auth.signInWithPassword({ email: email, password: password });
+    setBusy("loginBtn", false, "Войти");
+    if (res.error) return setMsg("loginMsg", humanError(res.error), "err");
+    routeUser(res.data.user);
+  });
+
+  $("formSignup").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    clearMsg("signupMsg");
+    if (!sb) return setMsg("signupMsg", "Библиотека Supabase не загрузилась. Проверьте интернет.", "err");
+    var name = $("signupName").value.trim();
+    var email = $("signupEmail").value.trim();
+    var password = $("signupPassword").value;
+    if (!name) return setMsg("signupMsg", "Введите имя.", "err");
+    if (!validEmail(email)) return setMsg("signupMsg", "Введите корректный email.", "err");
+    if (password.length < 6) return setMsg("signupMsg", "Пароль должен быть не короче 6 символов.", "err");
+
+    setBusy("signupBtn", true, "Создать аккаунт");
+    var res = await sb.auth.signUp({ email: email, password: password, options: { data: { name: name } } });
+    setBusy("signupBtn", false, "Создать аккаунт");
+    if (res.error) return setMsg("signupMsg", humanError(res.error), "err");
+    if (res.data.session) return routeUser(res.data.user);
+    setMsg("signupMsg", "Аккаунт создан. Подтвердите почту " + email + " и войдите.", "ok");
+    $("formSignup").reset();
+  });
+
+  document.querySelectorAll(".goal-opt").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      draft.goal = btn.getAttribute("data-goal");
+      syncOnboardingUI();
+      showOnboardingScreen("metricsView");
+      setTimeout(function () { $("inputHeight").focus(); }, 60);
+    });
+  });
+
+  $("metricsBack").addEventListener("click", function () { showOnboardingScreen("goalView"); });
+
+  $("formMetrics").addEventListener("submit", function (e) {
+    e.preventDefault();
+    clearMsg("metricsMsg");
+    var h = parseFloat($("inputHeight").value);
+    var w = parseFloat($("inputWeight").value);
+    var age = parseInt($("inputAge").value, 10);
+
+    if (!h || h < 100 || h > 250) return setMsg("metricsMsg", "Введите рост от 100 до 250 см.", "err");
+    if (!w || w < 30 || w > 250) return setMsg("metricsMsg", "Введите вес от 30 до 250 кг.", "err");
+    if (!age || age < 10 || age > 100) return setMsg("metricsMsg", "Введите возраст от 10 до 100 лет.", "err");
+
+    draft.height = Math.round(h);
+    draft.weight = Math.round(w * 10) / 10;
+    draft.age = age;
+
+    var bmi = calcBMI(draft.height, draft.weight);
+    if (age < 18 && draft.goal === "weight_loss" && bmi < 25) {
+      var status = bmi < 18.5 ? "ниже нормы" : "в норме";
+      $("warnBmiText").textContent =
+        "Тебе " + age + " лет, а твой ИМТ — " + bmi + " (" + status + "). В этом возрасте лучше не уходить в жёсткое похудение. Предлагаем выбрать «Сброс жира» — более мягкий дефицит с акцентом на белок и сохранение мышц.";
+      $("ageWarnBox").classList.remove("hidden");
+      $("warnStep1").classList.remove("hidden");
+      $("warnStep2").classList.add("hidden");
+      return;
+    }
+
+    syncOnboardingUI();
+    showOnboardingScreen("activityView");
+  });
+
+  function switchToFatLoss() {
+    draft.goal = "fat_loss";
+    hideAgeWarn();
+    syncOnboardingUI();
+    showOnboardingScreen("activityView");
+  }
+  $("warnSwitchBtn").addEventListener("click", switchToFatLoss);
+  $("warnSwitchBtn2").addEventListener("click", switchToFatLoss);
+  $("warnDeclineBtn").addEventListener("click", function () {
+    $("warnStep1").classList.add("hidden");
+    $("warnStep2").classList.remove("hidden");
+  });
+  $("warnContinueRiskBtn").addEventListener("click", function () {
+    hideAgeWarn();
+    syncOnboardingUI();
+    showOnboardingScreen("activityView");
+  });
+
+  document.querySelectorAll(".act-opt").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      clearMsg("activityMsg");
+      draft.activity = btn.getAttribute("data-activity");
+      syncOnboardingUI();
+    });
+  });
+
+  $("activityBack").addEventListener("click", function () { showOnboardingScreen("metricsView"); });
+  $("activitySave").addEventListener("click", async function () {
+    clearMsg("activityMsg");
+    if (!draft.activity || !ACTIVITY_MAP[draft.activity]) {
+      return setMsg("activityMsg", "Выберите один из 5 уровней активности.", "err");
+    }
+    setBusy("activitySave", true, "Запустить SoloFit");
+    var res = await sb.auth.updateUser({ data: draft });
+    setBusy("activitySave", false, "Запустить SoloFit");
+    if (res.error) return setMsg("activityMsg", "Ошибка сохранения: " + res.error.message, "err");
+    showApp(res.data.user);
+  });
+
+  // ==================== FOOD & PORTIONS ====================
+  var currentMeal = null;
+  var selectedFood = null;
+
+  function totals() {
+    var t = { kcal: 0, p: 0, f: 0, c: 0 };
+    MEALS.forEach(function (m) {
+      day().meals[m.id].forEach(function (it) {
+        t.kcal += it.kcal; t.p += it.p; t.f += it.f; t.c += it.c;
+      });
+    });
+    return t;
+  }
+
+  function setMacro(letter, value, goal) {
+    $("bar" + letter).style.width = Math.min(100, (value / goal) * 100) + "%";
+    $("val" + letter).textContent = round1(value) + " / " + goal + " г";
+  }
+
+  function renderFood() {
+    var t = totals();
+    var left = GOAL.kcal - Math.round(t.kcal);
+    $("kcalLeft").textContent = Math.abs(left);
+    $("kcalLabel").textContent = left >= 0 ? "осталось ккал" : "ккал сверх нормы";
+
+    var ratio = Math.min(1, t.kcal / GOAL.kcal);
+    $("ring").style.strokeDashoffset = RING_LEN * (1 - ratio);
+
+    setMacro("P", t.p, GOAL.p);
+    setMacro("F", t.f, GOAL.f);
+    setMacro("C", t.c, GOAL.c);
+
+    var html = "";
+    MEALS.forEach(function (m) {
+      var items = day().meals[m.id];
+      var sum = items.reduce(function (s, it) { return s + it.kcal; }, 0);
+      html += '<article class="glass card" style="margin-top:14px">';
+      html += '<div class="meal-head"><h2>' + m.name + '</h2><span class="sum">' + Math.round(sum) + ' ккал</span></div>';
+      if (items.length) {
+        html += '<ul class="items">';
+        items.forEach(function (it, i) {
+          html += '<li><div>' + esc(it.name) + ' <span class="meta">· ' + it.g + ' г</span></div>' +
+                  '<span class="kc">' + Math.round(it.kcal) + '</span>' +
+                  '<button class="icon-btn" type="button" data-del="' + m.id + ':' + i + '" aria-label="Удалить ' + esc(it.name) + '">✕</button></li>';
+        });
+        html += '</ul>';
+      } else {
+        html += '<p class="empty">Пока пусто</p>';
+      }
+      html += '<button class="add-btn" type="button" data-add="' + m.id + '">+ Добавить в «' + m.name + '»</button></article>';
+    });
+    $("meals").innerHTML = html;
+    hooks.onRender.forEach(function (fn) { try { fn(t, GOAL); } catch (e) {} });
+  }
+
+  function showSheetView(which) {
+    $("sheetSearchView").classList.toggle("hidden", which !== "search");
+    $("sheetPortionView").classList.toggle("hidden", which !== "portion");
+    $("sheetCustomView").classList.toggle("hidden", which !== "custom");
+  }
+
+  function renderFoodList() {
+    var q = $("search").value.trim().toLowerCase();
+    var list = FOODS.filter(function (f) { return f.n.toLowerCase().indexOf(q) !== -1; });
+    var html = list.map(function (f) {
+      return '<button class="food-btn" type="button" data-food="' + FOODS.indexOf(f) + '">' +
+             '<span>' + esc(f.n) + '</span><span class="meta">' + f.k + ' ккал · Б' + f.p + '</span></button>';
+    }).join("");
+    $("foodList").innerHTML = html || '<p class="empty">Ничего не найдено — нажмите «+ Свой»</p>';
+  }
+
+  function updatePortionPreview() {
+    if (!selectedFood) return;
+    var g = Math.max(0, parseFloat($("grams").value) || 0);
+    var k = g / 100;
+    $("portionPreview").textContent =
+      Math.round(selectedFood.k * k) + " ккал · Б " + round1(selectedFood.p * k) + " г · Ж " + round1(selectedFood.f * k) + " г · У " + round1(selectedFood.c * k) + " г";
+  }
+
+  function closeAllSheets() {
+    $("sheet").hidden = true;
+    $("profileSheet").hidden = true;
+    $("scrim").hidden = true;
+    currentMeal = null;
+    selectedFood = null;
+  }
+
+  function openSheet(mealId) {
+    currentMeal = mealId;
+    selectedFood = null;
+    var meal = MEALS.filter(function (m) { return m.id === mealId; })[0];
+    $("sheetTitle").textContent = "В «" + meal.name + "»";
+    $("search").value = "";
+    renderFoodList();
+    showSheetView("search");
+    $("profileSheet").hidden = true;
+    $("sheet").hidden = false;
+    $("scrim").hidden = false;
+    setTimeout(function () { $("search").focus(); }, 50);
+  }
+
+  $("search").addEventListener("input", renderFoodList);
+  $("grams").addEventListener("input", updatePortionPreview);
+  $("scrim").addEventListener("click", closeAllSheets);
+  $("closeSheet").addEventListener("click", closeAllSheets);
+  $("closeProfile").addEventListener("click", closeAllSheets);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAllSheets(); });
+
+  $("foodList").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-food]");
+    if (!btn || !currentMeal) return;
+    selectedFood = FOODS[+btn.getAttribute("data-food")];
+    $("portionName").textContent = selectedFood.n;
+    $("portionPer100").textContent =
+      "На 100 г: " + selectedFood.k + " ккал · Б " + selectedFood.p + " · Ж " + selectedFood.f + " · У " + selectedFood.c;
+    $("grams").value = "100";
+    updatePortionPreview();
+    showSheetView("portion");
+    setTimeout(function () { $("grams").focus(); $("grams").select(); }, 50);
+  });
+
+  document.querySelectorAll("[data-preset-g]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      $("grams").value = b.getAttribute("data-preset-g");
+      updatePortionPreview();
+    });
+  });
+
+  $("portionBack").addEventListener("click", function () { showSheetView("search"); });
+  $("portionAdd").addEventListener("click", function () {
+    if (!selectedFood || !currentMeal) return;
+    var g = parseFloat($("grams").value);
+    if (!g || g <= 0) { $("grams").focus(); return; }
+    var k = g / 100;
+    day().meals[currentMeal].push({
+      name: selectedFood.n, g: g,
+      kcal: selectedFood.k * k, p: selectedFood.p * k, f: selectedFood.f * k, c: selectedFood.c * k
+    });
+    saveDb();
+    closeAllSheets();
+    renderFood();
+  });
+
+  $("openCustomFood").addEventListener("click", function () {
+    $("formCustomFood").reset();
+    $("customGrams").value = "100";
+    showSheetView("custom");
+    setTimeout(function () { $("customName").focus(); }, 50);
+  });
+  $("customBack").addEventListener("click", function () { showSheetView("search"); });
+  $("formCustomFood").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!currentMeal) return;
+    var name = $("customName").value.trim();
+    var k100 = parseFloat($("customKcal").value) || 0;
+    var p100 = parseFloat($("customP").value) || 0;
+    var f100 = parseFloat($("customF").value) || 0;
+    var c100 = parseFloat($("customC").value) || 0;
+    var g = parseFloat($("customGrams").value) || 0;
+    if (!name || g <= 0) return;
+    var mult = g / 100;
+    day().meals[currentMeal].push({
+      name: name, g: g, kcal: k100 * mult, p: p100 * mult, f: f100 * mult, c: c100 * mult
+    });
+    saveDb();
+    closeAllSheets();
+    renderFood();
+  });
+
+  $("meals").addEventListener("click", function (e) {
+    var add = e.target.closest("[data-add]");
+    if (add) { openSheet(add.getAttribute("data-add")); return; }
+    var del = e.target.closest("[data-del]");
+    if (del) {
+      var parts = del.getAttribute("data-del").split(":");
+      day().meals[parts[0]].splice(+parts[1], 1);
+      saveDb();
+      renderFood();
+    }
+  });
+
+  // ==================== PROFILE ====================
+  $("openProfile").addEventListener("click", function () {
+    $("sheet").hidden = true;
+    $("profileSheet").hidden = false;
+    $("scrim").hidden = false;
+  });
+  $("editParamsBtn").addEventListener("click", function () {
+    closeAllSheets();
+    syncOnboardingUI();
+    showOnboardingScreen("goalView");
+  });
+  $("logoutBtn").addEventListener("click", async function () {
+    closeAllSheets();
+    if (sb) await sb.auth.signOut();
+    routeUser(null);
+    selectTab("login");
+  });
+
+  // ==================== WORKOUT & TIMER ====================
+  function renderWorkout() {
+    var html = "";
+    PLAN.forEach(function (ex, i) {
+      var marks = day().sets[i] || [];
+      var done = 0, btns = "";
+      for (var s = 0; s < ex.sets; s++) {
+        var on = !!marks[s];
+        if (on) done++;
+        btns += '<button class="set" type="button" aria-pressed="' + on + '" data-ex="' + i + '" data-set="' + s + '">' + (s + 1) + '</button>';
+      }
+      html += '<div class="ex"><div class="ex-top"><span class="ex-name">' + esc(ex.name) + '</span>' +
+              '<span class="ex-scheme">' + ex.sets + ' × ' + ex.reps + '</span></div>' +
+              '<div class="sets">' + btns + '</div><div class="progress">' + done + ' из ' + ex.sets + ' подходов</div></div>';
+    });
+    $("exercises").innerHTML = html;
+  }
+
+  $("exercises").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-set]");
+    if (!b) return;
+    var i = +b.getAttribute("data-ex"), s = +b.getAttribute("data-set");
+    var marks = day().sets[i] || (day().sets[i] = []);
+    marks[s] = !marks[s];
+    saveDb();
+    renderWorkout();
+  });
+
+  var restLeft = 60, restTimer = null;
+  function fmt(s) { return "0" + Math.floor(s / 60) + ":" + pad(s % 60); }
+  $("restBtn").addEventListener("click", function () {
+    if (restTimer) {
+      clearInterval(restTimer);
+      restTimer = null;
+      $("restBtn").textContent = "Старт 60 с";
+      $("restTime").textContent = "01:00";
+      return;
+    }
+    restLeft = 60;
+    $("restTime").textContent = fmt(restLeft);
+    $("restBtn").textContent = "Стоп";
+    restTimer = setInterval(function () {
+      restLeft -= 1;
+      $("restTime").textContent = fmt(Math.max(0, restLeft));
+      if (restLeft <= 0) {
+        clearInterval(restTimer);
+        restTimer = null;
+        $("restBtn").textContent = "Старт 60 с";
+        $("restTime").textContent = "Готово";
+      }
+    }, 1000);
+  });
+
+  // ==================== TABS ====================
+  function bindTabs() {
+    var tabs = document.querySelectorAll("[data-tab]");
+    tabs.forEach(function (t) {
+      t.onclick = function () {
+        var name = t.getAttribute("data-tab");
+        tabs.forEach(function (x) { x.setAttribute("aria-selected", String(x === t)); });
+        document.querySelectorAll(".view").forEach(function (v) {
+          v.classList.toggle("active", v.id === "view-" + name);
+        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+    });
+  }
+  bindTabs();
+
+  // ==================== INIT ====================
+  $("today").textContent = now.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" });
+
+  if (sb) {
+    sb.auth.onAuthStateChange(function (event, session) {
+      if (session && session.user) routeUser(session.user);
+      else if (event === "SIGNED_OUT") routeUser(null);
+    });
+    sb.auth.getSession().then(function (r) {
+      routeUser(r.data && r.data.session ? r.data.session.user : null);
+    });
+  }
+})();
+</script>
+
+<!-- ==================== ЗОНА ПОДКЛЮЧЕНИЯ ОТДЕЛЬНЫХ ФИШЕК ==================== -->
+<!-- Новые модули клади рядом с index.html и подключай сюда одной строкой:
+<script src="water.js"></script>
+<script src="shop-api.js"></script>
+-->
 </body>
 </html>
