@@ -1,280 +1,105 @@
 /* ==========================================================
-   SoloFit — светлая монохромная тема в стиле макетов
-   Точное соответствие предоставленному прототипу (чистые белые
-   экраны, мягкие серые плейсхолдеры, воздух, минимальные линии).
-   Подключается вместо visual/theme.css (поменяйте href в <head>).
+   SoloFit · THEME (цвета и тени, стиль «вайрфрейм»)
+   Серо-белая палитра, чёрные акценты, без теней.
+   Подключается ПОСЛЕ layout.css. Менять цвета здесь.
    ========================================================== */
 
 :root {
-  --bg: #F6F6F6;
-  --card: #FFFFFF;
-  --ink: #1A1A1A;
-  --ink-2: #333333;
-  --gray-1: #8C8C8C;
-  --gray-2: #D4D4D4;
-  --gray-3: #F0F0F0;
-  --line: #E8E8E8;
-  --text: #1A1A1A;
-  --muted: #8C8C8C;
-  --moon: #1A1A1A;
-  --moon-2: #1A1A1A;
-  --moon-3: #8C8C8C;
-  --night-0: #F6F6F6;
-  --night-1: #FFFFFF;
-  --night-2: #F6F6F6;
+  --bg: #EFEFEF;          /* фон страницы */
+  --card: #FFFFFF;        /* карточки */
+  --ink: #1C1C1C;         /* основной чёрный */
+  --ink-2: #3A3A3A;
+  --text: #1C1C1C;
+  --muted: #8A8A8A;
+  --line: #D6D6D6;        /* рамки */
+  --wire: #E9E9E9;        /* серые заглушки (как картинки на макете) */
+  --wire-2: #F5F5F5;      /* поля и подложки */
   --danger: #D64545;
+  --bar: #1C1C1C;         /* нижняя панель */
+  --bar-text: #FFFFFF;
+  --bar-muted: #9A9A9A;
   color-scheme: light;
 }
 
-body {
-  background: var(--bg);
-  background-attachment: scroll;
-}
-body::before { display: none; }
+body { background: var(--bg); }
 
-/* ---------- Поверхности: белые карточки, воздух, лёгкие линии ---------- */
-.glass {
-  background: var(--card);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-}
-.glass::before,
-.glass::after { display: none; }
+.glass { background: var(--card); box-shadow: none; }
+.card h2, .hello, .auth-brand, .brand, .portion-name, .ring-center b,
+.choice-title, .ex-name, .rest-time, .pf-name, .stat-box .v, .macro-row .k { color: var(--ink); }
+.sub, .muted, .today, .empty, .ring-center span, .items .meta, .food-btn .meta,
+.stat-box .k, .step-caption, .water-count, .progress, .ex-scheme { color: var(--muted); }
+.goal-strip, .goal-strip b, .macro-row .v, .meal-head .sum { color: var(--text); }
 
-.sheet {
-  border-radius: 28px 28px 0 0;
-  border-bottom: 0;
-  box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.07);
-}
-.scrim { background: rgba(18, 18, 18, 0.32); }
-
-/* ---------- Типографика ---------- */
-.auth-brand, .hello, .brand, .portion-name, .ring-center b,
-.choice-title, .ex-name, .rest-time, .stat-box .v, .macro-row .k,
-.card h2, .sheet-head h3, .profile-chip, .preset-btn, .tabbar button[aria-selected="true"] {
-  color: var(--ink);
-}
-.sub, .muted, .today, .empty, .goal-strip, .ring-center span,
-.items .meta, .food-btn .meta, .stat-box .k, .step-caption {
-  color: var(--muted);
-}
-.goal-strip b { color: var(--ink); }
-.brand { font-family: var(--body); font-weight: 800; letter-spacing: -0.01em; }
-
-/* ---------- Кнопки (как в макетах: твёрдый тёмный + ghost) ---------- */
-.btn {
-  background: var(--ink);
-  border: 1px solid var(--ink);
-  color: #FFFFFF;
-  border-radius: 14px;
-  box-shadow: none;
-}
+/* Кнопки */
+.btn { background: var(--ink); border-color: var(--ink); color: #FFFFFF; }
 .btn:hover:not(:disabled) { background: var(--ink-2); }
-.btn.ghost {
-  background: #FFFFFF;
-  border: 1px solid var(--line);
-  color: var(--ink);
-}
-.btn.ghost:hover:not(:disabled) { background: var(--gray-3); color: var(--ink); }
-.btn.danger {
-  background: #FFF1F1;
-  border-color: #F5C6C6;
-  color: var(--danger);
-}
-
-.add-btn {
-  background: #FFFFFF;
-  border: 1px solid var(--ink);
-  color: var(--ink);
-  border-radius: 14px;
-  box-shadow: none;
-}
-.add-btn:hover { background: var(--gray-3); }
-
-.pill {
-  background: var(--ink);
-  border: 0;
-  color: #FFFFFF;
-  border-radius: 999px;
-}
-
-.icon-btn {
-  background: #FFFFFF;
-  border: 1px solid var(--line);
-  color: var(--gray-1);
-  border-radius: 12px;
-}
+.btn.ghost { background: #FFFFFF; border: 1px solid var(--line); color: var(--ink); }
+.btn.ghost:hover:not(:disabled) { background: var(--wire); }
+.btn.danger { background: #FDECEC; border-color: #F5C6C6; color: var(--danger); }
+.add-btn { background: #FFFFFF; border: 1px dashed var(--ink-2); color: var(--ink); }
+.add-btn:hover { background: var(--wire); }
+.pill { background: var(--ink); color: #FFFFFF; }
+.icon-btn { background: #FFFFFF; color: var(--muted); }
 .icon-btn:hover { color: var(--danger); }
+.profile-chip { background: #FFFFFF; color: var(--ink); }
 
-.profile-chip {
-  background: #FFFFFF;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-}
-.profile-chip:hover { background: var(--gray-3); }
+/* Поля и переключатели */
+input.field { background: var(--wire-2); color: var(--ink); }
+input.field:focus { background: #FFFFFF; }
+.seg { background: var(--wire-2); }
+.seg button { color: var(--muted); }
+.seg button[aria-selected="true"] { background: #FFFFFF; color: var(--ink); border: 1px solid var(--line); }
 
-/* ---------- Поля и сегменты (мягкие, как search/pills в макетах) ---------- */
-input.field {
-  background: #FFFFFF;
-  border: 1px solid var(--line);
-  color: var(--ink);
-  border-radius: 14px;
-}
-input.field:focus { border-color: var(--ink); }
-
-.seg {
-  background: var(--gray-3);
-  border: 0;
-  border-radius: 14px;
-}
-.seg button { color: var(--gray-1); }
-.seg button[aria-selected="true"] {
-  background: #FFFFFF;
-  color: var(--ink);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-}
-
-/* ---------- Онбординг ---------- */
-.step-dot { background: var(--gray-2); }
-.step-dot.active { background: var(--ink); }
-.step-dot.done { background: var(--gray-1); }
-
-.choice-btn {
-  background: #FFFFFF;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-}
-.choice-btn:hover:not(:disabled) {
-  background: var(--gray-3);
-  border-color: var(--gray-2);
-}
-.choice-btn.selected {
-  background: #FFFFFF;
-  border-color: var(--ink);
-  box-shadow: inset 0 0 0 1.5px var(--ink);
-}
+/* Выбор цели, активности, шаги */
+.choice-btn { background: #FFFFFF; color: var(--ink); }
+.choice-btn:hover:not(:disabled) { background: var(--wire-2); }
+.choice-btn.selected { background: var(--wire); border-color: var(--ink); }
 .choice-desc { color: var(--muted); }
-.choice-badge {
-  background: var(--gray-3);
-  border: 0;
-  color: var(--ink-2);
-  border-radius: 8px;
-}
+.choice-badge { background: var(--wire); color: var(--ink-2); }
+.step-dot { background: var(--line); }
+.step-dot.active { background: var(--ink); }
+.step-dot.done { background: var(--ink-2); }
 
-.warn-box {
-  background: #FFF6F6;
-  border-color: #F5C6C6;
-}
-.msg.err { background: #FFF6F6; border-color: #F5C6C6; }
-.msg.ok { color: var(--ink-2); background: var(--gray-3); border-color: var(--line); }
+/* Предупреждения и сообщения */
+.msg.err { color: var(--danger); background: #FDECEC; border: 1px solid #F5C6C6; }
+.msg.ok { color: var(--ink); background: var(--wire-2); border: 1px solid var(--line); }
+.warn-box { background: #FDECEC; border: 1px solid #F5C6C6; }
+.warn-title { color: var(--danger); }
+.warn-text { color: var(--text); }
 
-/* ---------- Калории и БЖУ ---------- */
-.hero { background: var(--card); }
-.ring .track { stroke: var(--gray-3); }
-.ring .bar {
-  stroke: var(--ink);
-  filter: none;
-}
-.bar-track { background: var(--gray-3); border-radius: 999px; }
-.bar-fill { background: var(--ink); border-radius: 999px; }
-.macro-row .v { color: var(--muted); }
+/* Кольцо калорий и полоски */
+.ring .track { stroke: var(--wire); }
+.ring .bar { stroke: var(--ink); }
+.bar-track { background: var(--wire); }
+.bar-fill { background: var(--ink); }
+.goal-strip { background: #FFFFFF; border: 1px solid var(--line); border-radius: 16px; }
 
-/* ---------- Приёмы пищи (карточки как в списках макетов) ---------- */
-.items li {
-  background: var(--bg);
-  border: 0;
-  color: var(--ink);
-  border-radius: 14px;
-}
-.add-btn { margin-top: 12px; }
+/* Списки и блоки */
+.items li { background: var(--wire-2); border: none; }
+.food-btn { background: #FFFFFF; color: var(--ink); }
+.food-btn:hover { background: var(--wire-2); }
+.preset-btn { background: #FFFFFF; color: var(--ink); }
+.preset-btn:hover { background: var(--wire); }
+.portion-preview { background: var(--wire-2); color: var(--ink); border: 1px solid var(--line); }
+.ex { background: #FFFFFF; }
+.set { background: var(--wire-2); color: var(--muted); }
+.set[aria-pressed="true"] { background: var(--ink); color: #FFFFFF; border-color: var(--ink); }
+.rest { background: var(--wire-2); }
+.stat-box { background: var(--wire-2); }
+.stat-box .v { color: var(--ink); }
+.pf-avatar { background: var(--wire); color: var(--ink); }
+.sp-item { border-bottom-color: var(--line); }
+.sp-item summary { color: var(--ink); }
 
-/* ---------- Тренировка ---------- */
-.ex {
-  background: var(--bg);
-  border: 0;
-  border-radius: 14px;
-}
-.set {
-  background: #FFFFFF;
-  border: 1px solid var(--line);
-  color: var(--gray-1);
-  border-radius: 12px;
-}
-.set[aria-pressed="true"] {
-  background: var(--ink);
-  color: #FFFFFF;
-  border-color: var(--ink);
-  box-shadow: none;
-}
-.rest {
-  background: var(--bg);
-  border: 0;
-  border-radius: 14px;
-}
+/* Нижняя панель */
+.tabbar { background: var(--bar); }
+.tabbar button { background: transparent; color: var(--bar-muted); }
+.tabbar button[aria-selected="true"] { background: #FFFFFF; color: var(--ink); }
 
-/* ---------- Окно добавления продукта ---------- */
-.food-btn {
-  background: #FFFFFF;
-  border: 1px solid var(--line);
-  color: var(--ink);
-  border-radius: 14px;
-}
-.food-btn:hover { background: var(--gray-3); }
-.preset-btn {
-  background: #FFFFFF;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-}
-.preset-btn:hover { background: var(--gray-3); }
-.portion-preview {
-  background: var(--gray-3);
-  border: 0;
-  color: var(--ink);
-  border-radius: 14px;
-}
-.stat-box {
-  background: var(--bg);
-  border: 0;
-  border-radius: 12px;
-}
+/* Шторки и затемнение */
+.scrim { background: rgba(0, 0, 0, 0.35); }
+.sheet { background: #FFFFFF; box-shadow: none; }
+.sheet-head h3 { color: var(--ink); }
 
-/* ---------- Распознавание по фото (плейсхолдеры как серые блоки в макетах) ---------- */
-.ph-row {
-  background: var(--bg);
-  border: 0;
-  color: var(--ink);
-  border-radius: 14px;
-}
-.ph-row input[type="checkbox"] { accent-color: var(--ink); }
-
-/* ---------- Нижняя навигация (чистая белая панель как в прототипе) ---------- */
-.tabbar {
-  background: #FFFFFF;
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
-}
-.tabbar button { color: var(--gray-1); }
-.tabbar button[aria-selected="true"] {
-  background: var(--ink);
-  color: #FFFFFF;
-  box-shadow: none;
-  border-radius: 16px;
-}
-
-/* ---------- Фокус и активные состояния ---------- */
-.set:focus-visible,
-.btn:focus-visible,
-.icon-btn:focus-visible { outline-color: var(--ink); }
-
-/* ---------- Убираем старые градиенты и «стекло» ---------- */
-.set[aria-pressed="true"],
-.btn,
-.pill,
-.tabbar button[aria-selected="true"] {
-  background-image: none;
-}
+/* Фокус */
+:focus-visible { outline-color: var(--ink); }
