@@ -317,6 +317,7 @@
     .macros { width: 100%; }
   }
 </style>
+<link rel="stylesheet" href="visual/theme.css">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -568,8 +569,8 @@
 
   <section class="view" id="view-train" role="tabpanel" aria-label="Тренировка">
     <div class="glass card">
-      <h2>Full body</h2>
-      <p class="muted">Базовый шаблон на всё тело. Три подхода каждого упражнения, отметки сохраняются за сегодня.</p>
+      <h2 id="workoutTitle">Тренировка</h2>
+      <p class="muted">Программа верх/низ, HIT: по 2 подхода до отказа. Отметки сохраняются за сегодня.</p>
       <div id="exercises"></div>
       <div class="rest">
         <div>
@@ -669,6 +670,7 @@
   </div>
 </div>
 
+<script src="base/workouts.js"></script>
 <script>
 (function () {
   "use strict";
@@ -784,14 +786,8 @@
     { id: "snack",     name: "Перекус" }
   ];
 
-  var PLAN = [
-    { name: "Приседания с весом тела", sets: 3, reps: "12" },
-    { name: "Отжимания от пола или с колен", sets: 3, reps: "8–12" },
-    { name: "Тяга гантели в наклоне", sets: 3, reps: "10 на руку" },
-    { name: "Выпады назад", sets: 3, reps: "10 на ногу" },
-    { name: "Ягодичный мост", sets: 3, reps: "15" },
-    { name: "Планка", sets: 3, reps: "30 сек" }
-  ];
+  var PLAN = (window.SOLOFIT_WORKOUTS ? SOLOFIT_WORKOUTS.toPlan(SOLOFIT_WORKOUTS.todayId()) : []);
+  var WORKOUT_TITLE = window.SOLOFIT_WORKOUTS ? SOLOFIT_WORKOUTS.getDay(SOLOFIT_WORKOUTS.todayId()).title : "";
 
   var pad = function (n) { return n < 10 ? "0" + n : "" + n; };
   var round1 = function (x) { return Math.round(x * 10) / 10; };
@@ -1345,6 +1341,8 @@
 
   // ==================== WORKOUT & TIMER ====================
   function renderWorkout() {
+    var wt = $("workoutTitle");
+    if (wt && WORKOUT_TITLE) wt.textContent = WORKOUT_TITLE;
     var html = "";
     PLAN.forEach(function (ex, i) {
       var marks = day().sets[i] || [];
