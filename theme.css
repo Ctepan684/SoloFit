@@ -1,0 +1,260 @@
+/* ==========================================================
+   SoloFit — светлая монохромная тема в стиле макетов
+   Подключается вместо visual/theme.css (поменяйте href в <head>).
+   ========================================================== */
+
+:root {
+  --bg: #F4F4F4;
+  --card: #FFFFFF;
+  --ink: #1C1C1C;
+  --ink-2: #3A3A3A;
+  --gray-1: #8A8A8A;
+  --gray-2: #D9D9D9;
+  --gray-3: #EFEFEF;
+  --line: #E6E6E6;
+  --text: #1C1C1C;
+  --muted: #8A8A8A;
+  --moon: #1C1C1C;
+  --moon-2: #1C1C1C;
+  --moon-3: #8A8A8A;
+  --night-0: #F4F4F4;
+  --night-1: #FFFFFF;
+  --night-2: #F4F4F4;
+  --danger: #D64545;
+  color-scheme: light;
+}
+
+body {
+  background: var(--bg);
+  background-attachment: scroll;
+}
+body::before { display: none; }
+
+/* ---------- Поверхности: белые карточки без стекла ---------- */
+.glass {
+  background: var(--card);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: none;
+}
+.glass::before,
+.glass::after { display: none; }
+
+.sheet {
+  border-radius: 24px 24px 0 0;
+  border-bottom: 0;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.08);
+}
+.scrim { background: rgba(20, 20, 20, 0.35); }
+
+/* ---------- Типографика ---------- */
+.auth-brand, .hello, .brand, .portion-name, .ring-center b,
+.choice-title, .ex-name, .rest-time, .stat-box .v, .macro-row .k,
+.card h2, .sheet-head h3, .profile-chip, .preset-btn, .tabbar button[aria-selected="true"] {
+  color: var(--ink);
+}
+.sub, .muted, .today, .empty, .goal-strip, .ring-center span,
+.items .meta, .food-btn .meta, .stat-box .k, .step-caption {
+  color: var(--muted);
+}
+.goal-strip b { color: var(--ink); }
+.brand { font-family: var(--body); font-weight: 800; letter-spacing: -0.01em; }
+
+/* ---------- Кнопки ---------- */
+.btn {
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  color: #FFFFFF;
+  border-radius: 14px;
+  box-shadow: none;
+}
+.btn:hover:not(:disabled) { background: var(--ink-2); }
+.btn.ghost {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.btn.ghost:hover:not(:disabled) { background: var(--gray-3); color: var(--ink); }
+.btn.danger {
+  background: #FFF1F1;
+  border-color: #F5C6C6;
+  color: var(--danger);
+}
+
+.add-btn {
+  background: #FFFFFF;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  border-radius: 14px;
+  box-shadow: none;
+}
+.add-btn:hover { background: var(--gray-3); }
+
+.pill {
+  background: var(--ink);
+  border: 0;
+  color: #FFFFFF;
+}
+
+.icon-btn {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  color: var(--gray-1);
+}
+.icon-btn:hover { color: var(--danger); }
+
+.profile-chip {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+}
+.profile-chip:hover { background: var(--gray-3); }
+
+/* ---------- Поля и сегменты ---------- */
+input.field {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-radius: 12px;
+}
+input.field:focus { border-color: var(--ink); }
+
+.seg {
+  background: var(--gray-3);
+  border: 0;
+}
+.seg button { color: var(--gray-1); }
+.seg button[aria-selected="true"] {
+  background: #FFFFFF;
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+/* ---------- Онбординг ---------- */
+.step-dot { background: var(--gray-2); }
+.step-dot.active { background: var(--ink); }
+.step-dot.done { background: var(--gray-1); }
+
+.choice-btn {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+}
+.choice-btn:hover:not(:disabled) {
+  background: var(--gray-3);
+  border-color: var(--gray-2);
+}
+.choice-btn.selected {
+  background: #FFFFFF;
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+.choice-desc { color: var(--muted); }
+.choice-badge {
+  background: var(--gray-3);
+  border: 0;
+  color: var(--ink-2);
+}
+
+.warn-box {
+  background: #FFF6F6;
+  border-color: #F5C6C6;
+}
+.msg.err { background: #FFF6F6; border-color: #F5C6C6; }
+.msg.ok { color: var(--ink-2); background: var(--gray-3); border-color: var(--line); }
+
+/* ---------- Калории и БЖУ ---------- */
+.hero { background: var(--card); }
+.ring .track { stroke: var(--gray-3); }
+.ring .bar {
+  stroke: var(--ink);
+  filter: none;
+}
+.bar-track { background: var(--gray-3); }
+.bar-fill { background: var(--ink); }
+.macro-row .v { color: var(--muted); }
+
+/* ---------- Приёмы пищи ---------- */
+.items li {
+  background: var(--bg);
+  border: 0;
+  color: var(--ink);
+}
+.add-btn { margin-top: 12px; }
+
+/* ---------- Тренировка ---------- */
+.ex {
+  background: var(--bg);
+  border: 0;
+}
+.set {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  color: var(--gray-1);
+}
+.set[aria-pressed="true"] {
+  background: var(--ink);
+  color: #FFFFFF;
+  border-color: var(--ink);
+  box-shadow: none;
+}
+.rest {
+  background: var(--bg);
+  border: 0;
+}
+
+/* ---------- Окно добавления продукта ---------- */
+.food-btn {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.food-btn:hover { background: var(--gray-3); }
+.preset-btn {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+}
+.preset-btn:hover { background: var(--gray-3); }
+.portion-preview {
+  background: var(--gray-3);
+  border: 0;
+  color: var(--ink);
+}
+.stat-box {
+  background: var(--bg);
+  border: 0;
+}
+
+/* ---------- Распознавание по фото ---------- */
+.ph-row {
+  background: var(--bg);
+  border: 0;
+  color: var(--ink);
+}
+.ph-row input[type="checkbox"] { accent-color: var(--ink); }
+
+/* ---------- Нижняя навигация ---------- */
+.tabbar {
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+.tabbar button { color: var(--gray-1); }
+.tabbar button[aria-selected="true"] {
+  background: var(--ink);
+  color: #FFFFFF;
+  box-shadow: none;
+}
+
+/* ---------- Тренировка: кнопка ---------- */
+.set:focus-visible,
+.btn:focus-visible,
+.icon-btn:focus-visible { outline-color: var(--ink); }
+
+/* ---------- Светлые поверхности у карточек с градиентами ---------- */
+.set[aria-pressed="true"],
+.btn,
+.pill,
+.tabbar button[aria-selected="true"] {
+  background-image: none;
+}
