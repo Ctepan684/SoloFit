@@ -797,6 +797,7 @@
     save: saveDb,
     renderFood: renderFood,
     renderWorkout: renderWorkout,
+    selectFood: function (f) { if (currentMeal && f) openPortion(f); },
     addFoods: function (arr) {
       if (Array.isArray(arr)) arr.forEach(function (x) { FOODS.push(x); });
     },
@@ -1151,7 +1152,7 @@
     var list = all.slice(0, q ? 200 : 60);
     var html = list.map(function (f) {
       return '<button class="food-btn" type="button" data-food="' + FOODS.indexOf(f) + '">' +
-             '<span>' + esc(f.n) + '</span><span class="meta">' + f.k + ' ккал · Б' + f.p + '</span></button>';
+             '<span>' + esc(fullName(f)) + '</span><span class="meta">' + f.k + ' ккал · Б' + f.p + '</span></button>';
     }).join("");
     if (all.length > list.length) html += '<p class="empty">Показано ' + list.length + ' из ' + all.length + ' — уточните поиск</p>';
     $("foodList").innerHTML = html || '<p class="empty">Ничего не найдено — нажмите «+ Свой»</p>';
@@ -1171,6 +1172,18 @@
     $("scrim").hidden = true;
     currentMeal = null;
     selectedFood = null;
+  }
+
+  function fullName(f) { return f.b ? f.b + " " + f.n : f.n; }
+  function openPortion(f) {
+    selectedFood = f;
+    $("portionName").textContent = fullName(f);
+    $("portionPer100").textContent =
+      "На 100 г: " + f.k + " ккал · Б " + f.p + " · Ж " + f.f + " · У " + f.c;
+    $("grams").value = "100";
+    updatePortionPreview();
+    showSheetView("portion");
+    setTimeout(function () { $("grams").focus(); $("grams").select(); }, 50);
   }
 
   function openSheet(mealId) {
@@ -1197,14 +1210,7 @@
   $("foodList").addEventListener("click", function (e) {
     var btn = e.target.closest("[data-food]");
     if (!btn || !currentMeal) return;
-    selectedFood = FOODS[+btn.getAttribute("data-food")];
-    $("portionName").textContent = selectedFood.n;
-    $("portionPer100").textContent =
-      "На 100 г: " + selectedFood.k + " ккал · Б " + selectedFood.p + " · Ж " + selectedFood.f + " · У " + selectedFood.c;
-    $("grams").value = "100";
-    updatePortionPreview();
-    showSheetView("portion");
-    setTimeout(function () { $("grams").focus(); $("grams").select(); }, 50);
+    openPortion(FOODS[+btn.getAttribute("data-food")]);
   });
 
   document.querySelectorAll("[data-preset-g]").forEach(function (b) {
@@ -1221,7 +1227,7 @@
     if (!g || g <= 0) { $("grams").focus(); return; }
     var k = g / 100;
     day().meals[currentMeal].push({
-      name: selectedFood.n, g: g,
+      name: fullName(selectedFood), g: g,
       kcal: selectedFood.k * k, p: selectedFood.p * k, f: selectedFood.f * k, c: selectedFood.c * k
     });
     saveDb();
@@ -1375,5 +1381,6 @@
      Подключаются ПОСЛЕ основного скрипта. Новые модули — сюда одной строкой. -->
 <script src="water.js"></script>
 <script src="sleep.js"></script>
+<script src="foods-online.js"></script>
 </body>
 </html>
