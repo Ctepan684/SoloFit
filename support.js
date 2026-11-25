@@ -7,7 +7,7 @@
   "use strict";
   if (!window.SoloFit || !SoloFit.addTab) return;
 
-  var SUPPORT_EMAIL = "support@example.com"; // ← поставь свою почту
+  var SUPPORT_EMAIL = "naive444kai@gmail.com"; // ← поставь свою почту
 
   var FAQ = [
     ["Как добавить продукт?",
