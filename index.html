@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
   :root {
     --night-0: #05070F;
@@ -343,6 +344,7 @@
       <button type="button" role="tab" id="tabSignup" aria-selected="false" aria-controls="formSignup">Регистрация</button>
     </div>
 
+    <div class="cf-turnstile" data-sitekey="ВСТАВЬ_TURNSTILE_SITE_KEY" data-theme="light" style="display:flex;justify-content:center"></div>
     <form id="formLogin" novalidate>
       <label class="fld">Email
         <input class="field" id="loginEmail" type="email" autocomplete="email" required>
@@ -737,16 +739,53 @@
   var GOAL = { kcal: 2000, p: 130, f: 70, c: 230 };
   var db = { days: {} };
 
+  var cloudOk = false;   // данные из облака загружены, можно сохранять в облако
+  var cloudTimer = null;
+
   function storageKey() {
     return "solofit-v2-" + (currentUser && currentUser.id ? currentUser.id : "guest");
   }
-  function loadDb() {
-    try { db = JSON.parse(localStorage.getItem(storageKey())) || { days: {} }; }
-    catch (e) { db = { days: {} }; }
+  function localLoad() {
+    try { return JSON.parse(localStorage.getItem(storageKey())); } catch (e) { return null; }
   }
-  function saveDb() {
+  function localSave() {
     try { localStorage.setItem(storageKey(), JSON.stringify(db)); } catch (e) {}
   }
+  function cloudPush() {
+    if (!cloudOk || !sb || !currentUser) return;
+    sb.from("solofit_data")
+      .upsert({ user_id: currentUser.id, data: db, updated_at: new Date().toISOString() })
+      .then(function (r) { if (r.error) console.warn("sync:", r.error.message); });
+  }
+  function cloudSave() {
+    clearTimeout(cloudTimer);
+    cloudTimer = setTimeout(cloudPush, 800);
+  }
+  async function loadDb() {
+    cloudOk = false;
+    db = { days: {} };
+    var local = localLoad();
+    if (!sb || !currentUser) { if (local) db = local; return; }
+    try {
+      var r = await sb.from("solofit_data").select("data").eq("user_id", currentUser.id).maybeSingle();
+      if (r.error) throw r.error;
+      if (r.data && r.data.data) db = r.data.data;
+      else if (local) db = local;          // первый вход: переносим локальные данные в облако
+      cloudOk = true;
+      if (!db.days) db.days = {};
+      cloudSave();
+    } catch (e) {
+      if (local) db = local;               // нет сети: работаем с локальной копией, облако не трогаем
+    }
+    if (!db.days) db.days = {};
+  }
+  function saveDb() {
+    localSave();
+    cloudSave();
+  }
+  window.addEventListener("pagehide", function () {
+    if (cloudTimer) { clearTimeout(cloudTimer); cloudTimer = null; cloudPush(); }
+  });
   function day() {
     if (!db.days) db.days = {};
     if (!db.days[todayKey]) {
@@ -794,6 +833,7 @@
     getUser: function () { return currentUser; },
     getGoal: function () { return GOAL; },
     getDay: day,
+    getRoot: function () { return db; },
     save: saveDb,
     renderFood: renderFood,
     renderWorkout: renderWorkout,
@@ -900,11 +940,11 @@
     });
   }
 
-  function showApp(user) {
+  async function showApp(user) {
     currentUser = user;
     var meta = user.user_metadata || {};
     GOAL = calcGoal(meta);
-    loadDb();
+    await loadDb();
 
     $("onboardingWrap").classList.add("hidden");
     $("appWrap").classList.remove("hidden");
@@ -925,7 +965,7 @@
     hooks.onAppReady.forEach(function (fn) { try { fn(user, GOAL); } catch (e) {} });
   }
 
-  function routeUser(user) {
+  async function routeUser(user) {
     currentUser = user || null;
     if (!user) return showOnboardingScreen("authView");
 
@@ -944,7 +984,14 @@
     if (!draft.goal || !GOAL_LABELS[draft.goal]) return showOnboardingScreen("goalView");
     if (!draft.height || !draft.weight || !draft.age || !draft.experience) return showOnboardingScreen("metricsView");
     if (!draft.activity || !ACTIVITY_MAP[draft.activity]) return showOnboardingScreen("activityView");
-    showApp(user);
+    await showApp(user);
+  }
+
+  function getCaptcha() {
+    try { return window.turnstile ? turnstile.getResponse() : ""; } catch (e) { return ""; }
+  }
+  function resetCaptcha() {
+    try { if (window.turnstile) turnstile.reset(); } catch (e) {}
   }
 
   // ==================== AUTH EVENTS ====================
@@ -977,8 +1024,11 @@
     if (!validEmail(email)) return setMsg("loginMsg", "Введите корректный email.", "err");
     if (!password) return setMsg("loginMsg", "Введите пароль.", "err");
 
+    var captcha = getCaptcha();
+    if (!captcha) return setMsg("loginMsg", "Подтвердите, что вы не робот.", "err");
     setBusy("loginBtn", true, "Войти");
-    var res = await sb.auth.signInWithPassword({ email: email, password: password });
+    var res = await sb.auth.signInWithPassword({ email: email, password: password, options: { captchaToken: captcha } });
+    resetCaptcha();
     setBusy("loginBtn", false, "Войти");
     if (res.error) return setMsg("loginMsg", humanError(res.error), "err");
     routeUser(res.data.user);
@@ -995,8 +1045,19 @@
     if (!validEmail(email)) return setMsg("signupMsg", "Введите корректный email.", "err");
     if (password.length < 6) return setMsg("signupMsg", "Пароль должен быть не короче 6 символов.", "err");
 
+    var captcha = getCaptcha();
+    if (!captcha) return setMsg("signupMsg", "Подтвердите, что вы не робот.", "err");
     setBusy("signupBtn", true, "Создать аккаунт");
-    var res = await sb.auth.signUp({ email: email, password: password, options: { data: { name: name } } });
+    var res = await sb.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        data: { name: name },
+        captchaToken: captcha,
+        emailRedirectTo: window.location.origin + window.location.pathname
+      }
+    });
+    resetCaptcha();
     setBusy("signupBtn", false, "Создать аккаунт");
     if (res.error) return setMsg("signupMsg", humanError(res.error), "err");
     if (res.data.session) return routeUser(res.data.user);
@@ -1082,7 +1143,7 @@
     var res = await sb.auth.updateUser({ data: draft });
     setBusy("activitySave", false, "Запустить SoloFit");
     if (res.error) return setMsg("activityMsg", "Ошибка сохранения: " + res.error.message, "err");
-    showApp(res.data.user);
+    await showApp(res.data.user);
   });
 
   // ==================== FOOD & PORTIONS ====================

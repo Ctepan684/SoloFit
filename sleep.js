@@ -1,6 +1,6 @@
 /* ==========================================================
    SoloFit · BASE / SLEEP
-   Трекер сна: отдельная вкладка «Сон». Хранится в localStorage по пользователю.
+   Трекер сна: отдельная вкладка «Сон». Хранится в данных пользователя (облако).
    Ключ записи — дата пробуждения (YYYY-MM-DD).
    ========================================================== */
 (function () {
@@ -17,10 +17,11 @@
   function uid() { var u = SoloFit.getUser(); return u && u.id ? u.id : "guest"; }
   function key() { return "solofit-sleep-" + uid(); }
   function load() {
-    try { return JSON.parse(localStorage.getItem(key())) || {}; } catch (e) { return {}; }
+    return SoloFit.getRoot().sleep || {};
   }
   function store(data) {
-    try { localStorage.setItem(key(), JSON.stringify(data)); } catch (e) {}
+    SoloFit.getRoot().sleep = data;
+    SoloFit.save();
   }
   function pad(n) { return n < 10 ? "0" + n : "" + n; }
   function todayStr() {
