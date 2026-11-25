@@ -8,7 +8,7 @@
   "use strict";
   if (!window.SoloFit) return;
 
-  var TURNSTILE_SITE_KEY = "ВСТАВЬ_TURNSTILE_SITE_KEY";
+  var TURNSTILE_SITE_KEY = "0x4AAAAAAGSZff8DTcCqg9VX";
 
   var host = document.getElementById("onboardingWrap");
   if (!host) return;
