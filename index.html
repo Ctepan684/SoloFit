@@ -344,7 +344,7 @@
       <button type="button" role="tab" id="tabSignup" aria-selected="false" aria-controls="formSignup">Регистрация</button>
     </div>
 
-    <div class="cf-turnstile" data-sitekey="0x4AAAAAAGSZff8DTcCqg9VX" data-theme="light" style="display:flex;justify-content:center"></div>
+    <div class="cf-turnstile" data-sitekey="ВСТАВЬ_TURNSTILE_SITE_KEY" data-theme="light" style="display:flex;justify-content:center"></div>
     <form id="formLogin" novalidate>
       <label class="fld">Email
         <input class="field" id="loginEmail" type="email" autocomplete="email" required>
@@ -526,6 +526,13 @@
     </div>
   </section>
 </main>
+
+<!-- Окно после подтверждения почты -->
+<div class="glass sheet" id="confirmSheet" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" hidden>
+  <div class="hello" id="confirmTitle" style="text-align:left">Аккаунт зарегистрирован</div>
+  <p class="sub" style="margin:0 0 4px;text-align:left">Почта подтверждена. Теперь войдите в SoloFit.</p>
+  <button class="btn" id="confirmLoginBtn" type="button">Войти</button>
+</div>
 
 <!-- ==================== ОСНОВНОЕ ПРИЛОЖЕНИЕ ==================== -->
 <div class="app hidden" id="appWrap">
@@ -869,6 +876,9 @@
     }
   };
 
+  // Пришли по ссылке из письма подтверждения? Тогда не пускаем сразу в приложение
+  var confirmFlow = /type=(signup|email)/.test(window.location.hash) || /[?&]code=/.test(window.location.search);
+
   // ==================== SUPABASE ====================
   var sb = null;
   if (window.supabase && window.supabase.createClient) {
@@ -966,6 +976,12 @@
   }
 
   async function routeUser(user) {
+    if (confirmFlow && user) {
+      await sb.auth.signOut();
+      confirmFlow = false;
+      showConfirmSheet();
+      user = null;
+    }
     currentUser = user || null;
     if (!user) return showOnboardingScreen("authView");
 
@@ -993,6 +1009,14 @@
   function resetCaptcha() {
     try { if (window.turnstile) turnstile.reset(); } catch (e) {}
   }
+
+  function showConfirmSheet() {
+    $("confirmSheet").hidden = false;
+  }
+  $("confirmLoginBtn").addEventListener("click", function () {
+    $("confirmSheet").hidden = true;
+    selectTab("login");
+  });
 
   // ==================== AUTH EVENTS ====================
   function selectTab(which) {
